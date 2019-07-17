@@ -11,7 +11,7 @@ class TextHandler(object):
 
         self.batch_size = batch_size
         self.window_size = window_size
-        self.sentences = self._read_sentences_from_json("../data/part-00000-a04d02d9-794e-4546-a9af-38dbb086452f-c000.json")
+        self.sentences = self._read_sentences_from_json("./data/test.json")
 
     def retrieve_batch_from_bq(self, idx):
         pass
@@ -65,3 +65,4 @@ class TextHandler(object):
 
 if __name__ == "__main__":
     fire.Fire(TextHandler)
+

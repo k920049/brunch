@@ -17,7 +17,7 @@ ops.reset_default_graph()
 # Declare model parameters
 batch_size = 500
 embedding_size = 200
-vocabulary_size = 2000
+vocabulary_size = 1796381
 generations = 50000
 model_learning_rate = 0.001
 num_sampled = int(batch_size / 2)  # Number of negative examples to sample.
@@ -27,7 +27,7 @@ save_embeddings_every = 5000
 print_loss_every = 100
 
 print("Loading data")
-with tf.name_scope("data load") as scope:
+with tf.name_scope("data") as scope:
     handler = TextHandler(batch_size=batch_size,
                           window_size=window_size)
     x_inputs = tf.placeholder(tf.int32, shape=[batch_size, 2 * window_size])
@@ -56,18 +56,14 @@ with tf.name_scope("train") as scope:
                                          partition_strategy="div"))
 
     # Create optimizer
-    optimizer = tf.train.GradientDescentOptimizer(learning_rate=model_learning_rate).minimize(loss)
+    # optimizer = tf.train.GradientDescentOptimizer(learning_rate=model_learning_rate).minimize(loss)
+    optimizer = tf.train.AdamOptimizer(learning_rate=model_learning_rate).minimize(loss)
+
+with tf.name_scope("miscellaneous") as scope:
     # Create model saving operation
     saver = tf.train.Saver({"embeddings": embeddings})
     # Add variable initializer.
     init = tf.global_variables_initializer()
-
-with tf.name_scope("metric"):
-    # Cosine similarity between words
-    norm = tf.sqrt(tf.reduce_sum(tf.square(embeddings), 1, keep_dims=True))
-    normalized_embeddings = embeddings / norm
-    valid_embeddings = tf.nn.embedding_lookup(normalized_embeddings, valid_dataset)
-    similarity = tf.matmul(valid_embeddings, normalized_embeddings, transpose_b=True)
 
 # start training
 with tf.Session() as sess:
