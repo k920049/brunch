@@ -12,7 +12,7 @@ REGION = "asia-east1"
 dataset_id = "brunch"
 os.environ["PROJECT"] = PROJECT
 os.environ["REGION"] = REGION
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "../gcp-tensorflow-222205-b11b68d4c01c.json"
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "../gcp-tensorflow-222205-2db292399699.json"
 
 
 class HistoryHandler(object):
@@ -55,6 +55,17 @@ class HistoryHandler(object):
                         print(e)
                     else:
                         assert job == []
+
+    def write_history(self):
+
+        query_string = """
+        select
+          id, timestamp, document
+        from
+          `gcp-tensorflow-222205.brunch.history`
+        """
+        df = self.client.query(query_string).to_dataframe()
+        df.to_parquet("../data/history.parquet")
 
     def plot_top_n(self, n = 10, bins = 10):
         """

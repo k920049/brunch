@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "gcp-tensorflow-222205",
+  "private_key_id": "2db292399699af30eb369b06919c3b6b1d8267ad",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCwkXGPa8PslwGu\nXO/Nc/HWKgo6BUw1GKFUa4AxIb3dLiCpFGH4PTOYi2//+H6d3qGeKXrOuJyNZTQa\nj9HjEi1T0Now1S4XZOq8Qsq1orMVmw7w8F/G/G+z3/L6W4zeSX5YYDRIVmDy7Zjj\nwMi/36/stf2m5cUyOEWS/rjQRLR0Cv6w1JHr6QihO2kh0JhVLPBAW/F6EG2Ke1+8\nlApENe29IxBpMUpSKfW4h6Dpdpk3e+kF8ye1k0csTXCdmb9ARkg5dBgu9uQSl0G+\n4nrhzKPGNhEgxxTvGdYw9YQEM9gNinZiYeoG5qHjtnwUvm8zu2ctflY70Tg68Je1\nhiN7G78ZAgMBAAECggEAA4Zl0F2QB+ZEXvMlSPJggLxuX5XpPXKgTueGA8UXDaY8\n+e8pnQt4vxoCiodPHM775kTQ+jVKj9KWSZT3NVuwqriT0I+C9+3Yd1l0g0+MGHlz\n4QjFershrkNBbjDbdTkdo/1IseyCizsF1z8rKtR4BkdkWNuDtjLUJcD+1s6WVS42\nA4UqBc18TbZgSSs/2vlCAM0kax9ebJgf5qi/gehGPXzlUWyG2Wbt8+pxsxDvZ0wb\nTQ733dt2UKJGk1FBXjishYGehjksJ4Pn9aY/Hxyr/1TqpZnqv9JRZnLZ558+FEbY\nTpg75C9Ex0rvyPlzS0QJE23M+A9PMANY/TiXHbd8IQKBgQDfEhNdYQYujLnwS8iq\n3acuzGaS3xKBEob4OJlia1HxPL+q11xULjZ5JYnXYIRf0PsbugfeC+tHtILUIPqX\nfqqbIi2EMpp915gRTj58POSfNcjPWy5Mg2guQtN8mb5FGrZWcrJyHq4JAJCbTxsG\nDv0EFTwbfPhkHy6VJvmNzpmbeQKBgQDKogWOdLnKdjQ8DK/ytMRljajfFFgjs5kH\n5z+q38HKNr5ecFSgdEPVoYPXq2fGQaSpjks52SNOFL52tKnIWdNLa4ehP46WFQbG\nrGyRtlYUwSnhO71zL/qxS1dmcJHCS41Nj9oHGV/b9ozBwKCYLrs9Ed/6WdSlk1ND\nuTZnGFK4oQKBgQDZlzEqefTkvUK2YcX43cMxRBKeG1habO8Y+2Sq+xJwJRi1FeOq\n/XUHURWW8D/PkvMOhbUc5DV5uVuQfibSVa0nK/yIIjBOpllgMBmFaIR9xKH/meqc\nmeWqkmbm+LT/hWHtC26DIOgUQefMhypOC5rEO85o5csJJt1yghUVPTzayQKBgQDD\nikTIavXbXeQcSrYEBdM8mM5sr8o6cZbsnIjBEXqF8/wTUF0qFehcIKgFGKBlHnWT\nNgB8C4FZWQVPshnhgGU5c8QHpDipthK66CtBFe7NynXqp2az4IoQSz9FWL4f/B6Y\nyYfBsAfkUXEVjBitovMHBNfaVJOzUI9aXEIWjM9O4QKBgGDghiC79YKPiJapCCKC\nL2TMbd0FFuK8JrjUOpyE2GPN7MlYW9uiD1eHEo/TCuo0sFQqkBRclL4nnKHJ8d8E\n3SAH1kcEOP68qPS6bnxFfFTG8ZPuko86lvLYHeVtEpFMwYu+HtnDe85cmU3zVlfg\nlF3QWVJTYRvXe7ttBtO11c1q\n-----END PRIVATE KEY-----\n",
+  "client_email": "brunch@gcp-tensorflow-222205.iam.gserviceaccount.com",
+  "client_id": "112985615620980118594",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/brunch%40gcp-tensorflow-222205.iam.gserviceaccount.com"
+}
