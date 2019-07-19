@@ -4,10 +4,12 @@ import numpy as np
 
 from model.sequence.Encoder import Encoder
 from model.sequence.Attention import Attention
+from handler.dataset import generate_dataset
+from keras.callbacks import ModelCheckpoint
 
 epoch=10
 
-history_length = 10
+history_length = 15
 vocab_size=1234
 embedding_dim=300
 units=256
@@ -17,12 +19,8 @@ BATCH_SIZE=64
 embedding_mx = np.zeros(shape=(vocab_size, embedding_dim))
 
 with tf.name_scope("data"):
-    user = tf.placeholder(dtype=tf.int32,
-                          shape=(None, history_length))
-    item = tf.placeholder(dtype=tf.int32,
-                          shape=(None, 1))
-    label = tf.placeholder(dtype=tf.int32,
-                           shape=(None, 1))
+    user = tf.keras.Input(shape=(history_length,))
+    item = tf.keras.Input(shape=(1,))
 
 with tf.name_scope("model"):
     # Sequencial Model
@@ -46,8 +44,21 @@ with tf.name_scope("model"):
     item = tf.keras.layers.Dense(units=64, activation="relu")(item)
     # dot product
     logit = tf.keras.layers.Dot(axes=1)([user, item])
+    pred = tf.keras.layers.Activation(activation='sigmoid')(logit)
 
 with tf.name_scope("train"):
-    optimizer = tf.keras.optimizers.Adam()
-    loss = tf.keras.losses.BinaryCrossentropy(from_logits=True)(label, logit)
+    model = tf.keras.Model(inputs=[user, item], outputs=pred)
+    filepath = "../data/checkpoints/model-{epoch:02d}-{val_acc:.2f}.hdf5"
+    checkpoint = ModelCheckpoint(filepath, monitor='val_acc', verbose=1, save_best_only=True, mode='max')
+    model.compile(optimizer='adam',
+                  loss='binary_crossentropy',
+                  metrics=['accuracy'],
+                  batch_size=10,
+                  validation_split=0.1,
+                  callbacks=[checkpoint],
+                  verbose=0)
+
+dataset = generate_dataset()
+model.fit(dataset, epochs=epoch)
+
 
