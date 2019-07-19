@@ -5,18 +5,18 @@ import numpy as np
 from model.sequence.Encoder import Encoder
 from model.sequence.Attention import Attention
 from handler.dataset import generate_dataset
-from keras.callbacks import ModelCheckpoint
+from tensorflow.keras.callbacks import ModelCheckpoint
 
+embedding_mx=np.load("./data/embedding.npz.npy")
 epoch=10
-
 history_length = 15
-vocab_size=1234
-embedding_dim=300
+vocab_size=embedding_mx.shape[0]
+embedding_dim=embedding_mx.shape[1]
 units=256
 
-BATCH_SIZE=64
+BATCH_SIZE=512
 
-embedding_mx = np.zeros(shape=(vocab_size, embedding_dim))
+# embedding_mx = np.zeros(shape=(vocab_size, embedding_dim))
 
 with tf.name_scope("data"):
     user_input = tf.keras.Input(shape=(history_length,))
@@ -31,7 +31,7 @@ with tf.name_scope("model"):
                       embedding_mx=embedding_mx)
     sample_output, sample_hidden = encoder(user_input)
     # Attention layer
-    attention_layer = Attention(units=10, history=history_length)
+    attention_layer = Attention(units=64, history=history_length)
     attension_result, attention_weights = attention_layer(sample_hidden, sample_output)
     print("done")
     # user dense layer
@@ -48,17 +48,17 @@ with tf.name_scope("model"):
 
 with tf.name_scope("train"):
     model = tf.keras.Model(inputs=[user_input, item_input], outputs=pred)
-    filepath = "../data/checkpoints/model-{epoch:02d}-{val_acc:.2f}.hdf5"
+    filepath = "../data/checkpoints/model-{epoch:02d}.hdf5"
     checkpoint = ModelCheckpoint(filepath, monitor='val_acc', verbose=1, save_best_only=True, mode='max')
     model.compile(optimizer='adam',
                   loss='binary_crossentropy',
-                  metrics=['accuracy'],
-                  batch_size=10,
-                  validation_split=0.1,
-                  callbacks=[checkpoint],
-                  verbose=0)
+                  metrics=['accuracy'])
 
-dataset = generate_dataset()
-model.fit(dataset, epochs=epoch)
+dataset = generate_dataset("./data/embedding.npz.npy",
+                           "./data/history_stripped.parquet",
+                           BATCH_SIZE)
+model.fit(dataset,
+          epochs=epoch,
+          callbacks=[checkpoint])
 
 

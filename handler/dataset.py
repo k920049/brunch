@@ -3,30 +3,34 @@ import pandas as pd
 import multiprocessing
 import tensorflow as tf
 
-def generate_dataset(path_to_weight="../data/embedding.npz.npy",
-                      path_to_history="../data/history_stripped.parquet"):
+vocab_size=642190
+
+def generate_batch(frame):
+    frame = frame.sort_values(by="timestamp")
+    values = frame["pos"].values
+    # user batch
+    user = [values] * (2 * len(values))
+    user = np.array(user)
+    # item batch
+    sampled = np.random.randint(low=0, high=vocab_size, size=15)
+    item = np.concatenate([values, sampled])
+    item = np.reshape(item, (-1, 1))
+    # label batch
+    pos = [1] * 15
+    neg = [0] * 15
+    label = np.concatenate([pos, neg])
+    label = np.reshape(label, (-1, 1))
+    return user, item, label
+
+
+def generate_dataset(path_to_weight="./data/embedding.npz.npy",
+                      path_to_history="./data/history_stripped.parquet",
+                     batch_size=256):
 
     cores = multiprocessing.cpu_count()
     doc_vec = np.load(path_to_weight)
     vocab_size = doc_vec.shape[0]
     df = pd.read_parquet(path_to_history)
-
-    def generate_batch(frame):
-        frame = frame.sort_values(by="timestamp")
-        values = frame["pos"].values
-        # user batch
-        user = [values] * (2 * len(values))
-        user = np.array(user)
-        # item batch
-        sampled = np.random.randint(low=0, high=vocab_size, size=15)
-        item = np.concatenate([values, sampled])
-        item = np.reshape(item, (-1, 1))
-        # label batch
-        pos = [1] * 15
-        neg = [0] * 15
-        label = np.concatenate([pos, neg])
-        label = np.reshape(label, (-1, 1))
-        return user, item, label
 
     df_group = df.groupby("id")
     df_group = [frame for name, frame in df_group]
@@ -40,5 +44,5 @@ def generate_dataset(path_to_weight="../data/embedding.npz.npy",
 
         data = tf.data.Dataset.from_tensor_slices((user, item))
         label = tf.data.Dataset.from_tensor_slices(label)
-        dataset = tf.data.Dataset.zip((data, label))
+        dataset = tf.data.Dataset.zip((data, label)).shuffle(1000).batch(batch_size)
         return dataset
