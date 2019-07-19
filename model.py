@@ -15,6 +15,7 @@ embedding_dim=embedding_mx.shape[1]
 units=256
 
 BATCH_SIZE=512
+evaluation_ratio = 0.9
 
 # embedding_mx = np.zeros(shape=(vocab_size, embedding_dim))
 
@@ -49,15 +50,19 @@ with tf.name_scope("model"):
 with tf.name_scope("train"):
     model = tf.keras.Model(inputs=[user_input, item_input], outputs=pred)
     filepath = "../data/checkpoints/model-{epoch:02d}.hdf5"
-    checkpoint = ModelCheckpoint(filepath, monitor='val_acc', verbose=1)
+    checkpoint = ModelCheckpoint(filepath, monitor='val_acc', save_best_only=True, mode="max", verbose=1)
+    checkpoint = ModelCheckpoint()
     model.compile(optimizer='adam',
                   loss='binary_crossentropy',
                   metrics=['accuracy'])
 
-dataset = generate_dataset("./data/history_stripped.parquet",
+dataset, length = generate_dataset("./data/history_stripped.parquet",
                            BATCH_SIZE)
-model.fit(dataset,
+eval_dataset = dataset.take(length * evaluation_ratio)
+train_dataset = dataset.skip(length * evaluation_ratio)
+model.fit(train_dataset,
           epochs=epoch,
-          callbacks=[checkpoint])
+          callbacks=[checkpoint],
+          validation_data=eval_dataset)
 
 

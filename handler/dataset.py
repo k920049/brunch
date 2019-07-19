@@ -3,6 +3,8 @@ import pandas as pd
 import multiprocessing
 import tensorflow as tf
 
+from tqdm import tqdm
+
 vocab_size=642190
 sample_ratio = 5
 
@@ -31,11 +33,11 @@ def generate_dataset(path_to_history="./data/history_stripped.parquet",
     df = pd.read_parquet(path_to_history)
 
     df_group = df.groupby("id")
-    df_group = [frame for name, frame in df_group]
+    df_group = [frame for name, frame in tqdm(df_group)]
 
     with multiprocessing.Pool(cores) as p:
         print("Generating a dataset of this epoch")
-        dataset = p.map(generate_batch, df_group)
+        dataset = list(tqdm(p.imap(generate_batch, df_group), total=len(df_group)))
         user = np.vstack([elem[0] for elem in dataset])
         item = np.vstack([elem[1] for elem in dataset])
         label = np.vstack([elem[2] for elem in dataset])
@@ -43,4 +45,4 @@ def generate_dataset(path_to_history="./data/history_stripped.parquet",
         data = tf.data.Dataset.from_tensor_slices((user, item))
         label = tf.data.Dataset.from_tensor_slices(label)
         dataset = tf.data.Dataset.zip((data, label)).shuffle(1000).batch(batch_size)
-        return dataset
+        return dataset, user.shape[0]
