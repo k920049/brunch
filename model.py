@@ -54,8 +54,7 @@ with tf.name_scope("train"):
                   loss='binary_crossentropy',
                   metrics=['accuracy'])
 
-dataset = generate_dataset("./data/embedding.npz.npy",
-                           "./data/history_stripped.parquet",
+dataset = generate_dataset("./data/history_stripped.parquet",
                            BATCH_SIZE)
 model.fit(dataset,
           epochs=epoch,

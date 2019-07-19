@@ -4,32 +4,30 @@ import multiprocessing
 import tensorflow as tf
 
 vocab_size=642190
+sample_ratio = 5
 
 def generate_batch(frame):
     frame = frame.sort_values(by="timestamp")
     values = frame["pos"].values
     # user batch
-    user = [values] * (2 * len(values))
+    user = [values] * (sample_ratio * len(values))
     user = np.array(user)
     # item batch
-    sampled = np.random.randint(low=0, high=vocab_size, size=15)
+    sampled = np.random.randint(low=0, high=vocab_size, size=(sample_ratio - 1) * len(values))
     item = np.concatenate([values, sampled])
     item = np.reshape(item, (-1, 1))
     # label batch
-    pos = [1] * 15
-    neg = [0] * 15
+    pos = [1] * len(values)
+    neg = [0] * ((sample_ratio - 1) * len(values))
     label = np.concatenate([pos, neg])
     label = np.reshape(label, (-1, 1))
     return user, item, label
 
 
-def generate_dataset(path_to_weight="./data/embedding.npz.npy",
-                      path_to_history="./data/history_stripped.parquet",
+def generate_dataset(path_to_history="./data/history_stripped.parquet",
                      batch_size=256):
-
+    print("Reading a pandas dataframe")
     cores = multiprocessing.cpu_count()
-    doc_vec = np.load(path_to_weight)
-    vocab_size = doc_vec.shape[0]
     df = pd.read_parquet(path_to_history)
 
     df_group = df.groupby("id")
