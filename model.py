@@ -49,7 +49,7 @@ with tf.name_scope("model"):
 with tf.name_scope("train"):
     model = tf.keras.Model(inputs=[user_input, item_input], outputs=pred)
     filepath = "../data/checkpoints/model-{epoch:02d}.hdf5"
-    checkpoint = ModelCheckpoint(filepath, monitor='val_acc', verbose=1, save_best_only=True, mode='max')
+    checkpoint = ModelCheckpoint(filepath, monitor='val_acc', verbose=1)
     model.compile(optimizer='adam',
                   loss='binary_crossentropy',
                   metrics=['accuracy'])
