@@ -22,6 +22,7 @@ class Encoder(tf.keras.Model):
 
     def call(self, x):
         x = self.embedding(x)
+        x = x[:, :, :-1]
         x = self.bi_lstm(x)
         output = x[0]
         state = self.concat(x[1:])

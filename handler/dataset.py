@@ -7,7 +7,7 @@ import math
 from tqdm import tqdm
 
 vocab_size=642190
-sample_ratio = 2
+sample_ratio = 3
 ratio = 0.1
 
 def generate_batch(frame):
@@ -43,22 +43,18 @@ def generate_dataset(path_to_history="./data/history_stripped.parquet"):
         item = np.vstack([elem[1] for elem in dataset]).astype(np.float32)
         label = np.vstack([elem[2] for elem in dataset]).astype(np.float32)
 
-        train_length = math.floor(user.shape[0])
-        user_train = user[0:train_length]
-        item_train = item[0:train_length]
-        data_train = [user_train, item_train]
-        label_train = label[0:train_length]
+        return [user, item], label
 
-        user_eval = user[train_length:]
-        item_eval = item[train_length:]
-        data_eval = [user_eval, item_eval]
-        label_eval = label[train_length:]
+def generate_embedding(path_to_dictionary="./data/dictionary.json",
+                       path_to_embedding="./data/embedding.npy"):
+    print("Loading doc2vec embeddings")
+    embedding = np.load(path_to_embedding)
+    df = pd.read_json(path_to_dictionary)
 
-        #train_data = tf.data.Dataset.from_tensor_slices((user_train, item_train))
-        #train_label = tf.data.Dataset.from_tensor_slices(label_train)
-        #train_dataset = tf.data.Dataset.zip((train_data, train_label)).shuffle(1000)
-
-        #eval_data = tf.data.Dataset.from_tensor_slices((user_eval, item_eval))
-        #eval_label = tf.data.Dataset.from_tensor_slices(label_eval)
-        #eval_dataset = tf.data.Dataset.zip((eval_data, eval_label)).shuffle(1000)
-        return data_train, label_train, data_eval, label_eval
+    df = df.sort_values("pos")
+    date = df["date"].values
+    date_array = np.array(date)
+    date_array = (date_array - np.min(date_array))
+    date_array = date_array / np.max(date_array)
+    date_array = np.expand_dims(date_array, axis=1)
+    return np.concatenate((embedding, date_array), axis=1)
