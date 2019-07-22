@@ -45,7 +45,7 @@ def generate_dataset(path_to_history="./data/history_stripped.parquet"):
 
         return [user, item], label
 
-def generate_embedding(path_to_dictionary="./data/dictionary.json",
+def generate_embedding(path_to_dictionary="./data/positional_dictionary.json",
                        path_to_embedding="./data/embedding.npy"):
     print("Loading doc2vec embeddings")
     embedding = np.load(path_to_embedding)

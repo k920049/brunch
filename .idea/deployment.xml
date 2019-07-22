@@ -5,12 +5,8 @@
       <paths name="jeasungpark@34.80.167.44:22">
         <serverdata>
           <mappings>
-            <mapping deploy="/" local="$PROJECT_DIR$" />
+            <mapping deploy="/brunch" local="$PROJECT_DIR$" />
           </mappings>
-          <excludedPaths>
-            <excludedPath path="/data/checkpoints" />
-            <excludedPath path="/data/checkpoints-original" />
-          </excludedPaths>
         </serverdata>
       </paths>
     </serverData>
