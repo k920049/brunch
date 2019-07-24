@@ -1,4 +1,4 @@
-# Brunch Article Recommendation
+1# Brunch Article Recommendation
 브런치 글 추천 대회 참가자에게 제공되는 예제 코드입니다. 간단한 추천 모델과 평가 코드가 포함되어 있습니다. (데이터셋이 `./res` 이외에 위치한 경우는 `config.py`를 수정하세요)
 ```bash
 $> tree -d

@@ -1,18 +1,22 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 import tensorflow as tf
 import numpy as np
+import pandas as pd
 import os
+import time
 
+from tqdm import tqdm
 from model.sequence.Encoder import Encoder
 from model.sequence.Attention import Attention
-from handler.dataset import generate_dataset, generate_embedding
+from handler.dataset import generate_train_dataset, generate_embedding, generate_evaluation_dataset
 from tensorflow.keras.callbacks import ModelCheckpoint
 from fire import Fire
 
 class Recommender(object):
 
-    def __init__(self, epoch=10,
-                 batch_size = 512,
+    def __init__(self,
+                 epoch=100,
+                 batch_size = 64,
                  evaluation_ratio = 0.1,
                  encoder_units = 256,
                  history_length=15):
@@ -23,11 +27,11 @@ class Recommender(object):
         self.encoder_units = encoder_units
         self.history_length = history_length
 
-        self._build_model()
+        self.model = self._build_model()
 
     def _build_model(self):
 
-        self.embedding_mx = generate_embedding(path_to_dictionary="./data/dictionary.json",
+        self.embedding_mx = generate_embedding(path_to_dictionary="./data/positional_dictionary.json",
                                                path_to_embedding="./data/embedding-2000.npy")
 
         self.vocab_size = self.embedding_mx.shape[0]
@@ -46,50 +50,86 @@ class Recommender(object):
                               embedding_mx=self.embedding_mx)
             sample_output, sample_hidden = encoder(user_input)
             # Attention layer
-            attention_layer = Attention(units=64, history=self.history_length)
+            attention_layer = Attention(units=10, history=self.history_length)
             attension_result, attention_weights = attention_layer(sample_hidden, sample_output)
             # user dense layer
-            user = tf.keras.layers.Dense(units=256, activation="relu")(attension_result)
+            user = tf.keras.layers.Dense(units=512, activation="relu")(attension_result)
+            user = tf.keras.layers.Dense(units=256, activation="relu")(user)
             user = tf.keras.layers.Dense(units=128, activation="relu")(user)
             user = tf.keras.layers.Dense(units=64, activation="relu")(user)
+            # user = tf.keras.layers.Dropout(0.1)(user)
             # item dense layer
             item = encoder.embedding(item_input)
             item = tf.keras.backend.squeeze(item, axis=1)
             item = tf.keras.layers.Dense(units=256, activation="relu")(item)
             item = tf.keras.layers.Dense(units=128, activation="relu")(item)
             item = tf.keras.layers.Dense(units=64, activation="relu")(item)
+            # item = tf.keras.layers.Dropout(0.1)(item)
             # dot product
             logit = tf.keras.layers.Dot(axes=1)([user, item])
             pred = tf.keras.layers.Activation(activation='sigmoid')(logit)
 
         with tf.name_scope("train"):
             model = tf.keras.Model(inputs=[user_input, item_input], outputs=pred)
-            model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+            model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001),
+                          loss='binary_crossentropy',
+                          metrics=['accuracy'])
         return model
 
     def train(self):
-        data, label = generate_dataset("./data/history_stripped.parquet")
-        filepath = "./data/checkpoints-original/model-{epoch:02d}.hdf5"
+        data, label = generate_train_dataset("./data/test.parquet")
+        filepath = "./data/checkpoints/deep-small-batch-v2/model-{epoch:02d}.hdf5"
         checkpoint = ModelCheckpoint(filepath,
                                      monitor='val_acc',
                                      save_weights_only=True,
-                                     save_best_only=True,
-                                     mode="max",
                                      verbose=1)
         self.model.fit(x = data,
                        y = label,
                        batch_size=self.batch_size,
-                       validation_split=self.evaluation_ratio,
                        shuffle=True,
                        epochs=self.epoch,
                        callbacks=[checkpoint])
 
-    def test(self):
-        pass
+    def test(self, test_file):
 
+        with open(test_file) as fp:
+            ids = [line[:-1] for line in fp]
+
+        df = pd.read_parquet("./data/test.parquet")
+        df = df.set_index("id")
+        item = np.reshape(np.load("./data/test_1000.npy"), (-1, 1))
+
+        self.model.load_weights("./data/checkpoints/deep-small-batch-v2/model-05.hdf5")
+
+        for id in tqdm(ids):
+            if not any(df.index.isin([id])):
+                continue
+
+            train = generate_evaluation_dataset(df, id, item.shape[0])
+            pred = np.reshape(self.model.predict(x=[train, item], batch_size=self.batch_size), (-1))
+            rec = pred.argsort()
+            rec = rec[::-1]
+            accuracy = [pred[idx] for idx in rec]
+            name = [item[elem][0] for elem in rec]
+            name_dict = {}
+            for idx, key in enumerate(name):
+                name_dict[key] = idx
+
+            sample = df.loc[id]
+            for key in np.unique(sample["eval"]):
+                if key in name_dict:
+                    print("\n", name_dict[key])
+                else:
+                    print("\n KeyError")
+
+            time.sleep(2)
+            print("done")
 
 if __name__ == "__main__":
-    Fire(Recommender)
+    model = Recommender()
+    model.train()
+#    model.test("./data/predict/dev.users")
+#    Fire(Recommender)
 
 
 

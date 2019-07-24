@@ -7,6 +7,9 @@
           <mappings>
             <mapping deploy="/brunch" local="$PROJECT_DIR$" />
           </mappings>
+          <excludedPaths>
+            <excludedPath path="/brunch/data/checkpoints" />
+          </excludedPaths>
         </serverdata>
       </paths>
     </serverData>
