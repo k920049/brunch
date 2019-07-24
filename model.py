@@ -2,8 +2,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import tensorflow as tf
 import numpy as np
 import pandas as pd
-import os
-import time
+import json
 
 from tqdm import tqdm
 from model.sequence.Encoder import Encoder
@@ -15,8 +14,8 @@ from fire import Fire
 class Recommender(object):
 
     def __init__(self,
-                 epoch=100,
-                 batch_size = 64,
+                 epoch=5,
+                 batch_size = 256,
                  evaluation_ratio = 0.1,
                  encoder_units = 256,
                  history_length=15):
@@ -32,7 +31,7 @@ class Recommender(object):
     def _build_model(self):
 
         self.embedding_mx = generate_embedding(path_to_dictionary="./data/positional_dictionary.json",
-                                               path_to_embedding="./data/embedding-2000.npy")
+                                               path_to_embedding="./data/embedding.npz.npy")
 
         self.vocab_size = self.embedding_mx.shape[0]
         self.embedding_dim = self.embedding_mx.shape[1]
@@ -53,9 +52,9 @@ class Recommender(object):
             attention_layer = Attention(units=10, history=self.history_length)
             attension_result, attention_weights = attention_layer(sample_hidden, sample_output)
             # user dense layer
-            user = tf.keras.layers.Dense(units=512, activation="relu")(attension_result)
-            user = tf.keras.layers.Dense(units=256, activation="relu")(user)
-            user = tf.keras.layers.Dense(units=128, activation="relu")(user)
+            #user = tf.keras.layers.Dense(units=512, activation="relu")(attension_result)
+            user = tf.keras.layers.Dense(units=256, activation="relu")(attension_result)
+            user = tf.keras.layers.Dense(units=128, activation="relu")(attension_result)
             user = tf.keras.layers.Dense(units=64, activation="relu")(user)
             # user = tf.keras.layers.Dropout(0.1)(user)
             # item dense layer
@@ -78,7 +77,7 @@ class Recommender(object):
 
     def train(self):
         data, label = generate_train_dataset("./data/test.parquet")
-        filepath = "./data/checkpoints/deep-small-batch-v2/model-{epoch:02d}.hdf5"
+        filepath = "./data/checkpoints/more_history/model-{epoch:02d}.hdf5"
         checkpoint = ModelCheckpoint(filepath,
                                      monitor='val_acc',
                                      save_weights_only=True,
@@ -98,11 +97,22 @@ class Recommender(object):
         df = pd.read_parquet("./data/test.parquet")
         df = df.set_index("id")
         item = np.reshape(np.load("./data/test_1000.npy"), (-1, 1))
+        with open("./data/dictionary.json") as fp:
+            dictionary = json.load(fp)
+        dictionary = dict([(value, key) for key, value in dictionary.items()])
+        rec_fp = open("./recommend.txt", "w+")
 
-        self.model.load_weights("./data/checkpoints/deep-small-batch-v2/model-05.hdf5")
+        self.model.load_weights("./data/checkpoints/more_history/model-02.hdf5")
 
         for id in tqdm(ids):
+
+            rec_fp.write("{} ".format(id))
+
             if not any(df.index.isin([id])):
+
+                for i in range(100):
+                    rec_fp.write("{} ".format(item[i][0]))
+                rec_fp.write("\n")
                 continue
 
             train = generate_evaluation_dataset(df, id, item.shape[0])
@@ -111,24 +121,28 @@ class Recommender(object):
             rec = rec[::-1]
             accuracy = [pred[idx] for idx in rec]
             name = [item[elem][0] for elem in rec]
-            name_dict = {}
-            for idx, key in enumerate(name):
-                name_dict[key] = idx
 
-            sample = df.loc[id]
-            for key in np.unique(sample["eval"]):
-                if key in name_dict:
-                    print("\n", name_dict[key])
-                else:
-                    print("\n KeyError")
+            for elem in name:
+                rec_fp.write("{} ".format(dictionary[elem]))
+            rec_fp.write("\n")
 
-            time.sleep(2)
-            print("done")
+            # name_dict = {}
+            # for idx, key in enumerate(name):
+            #     name_dict[key] = idx
+            #
+            # sample = df.loc[id]
+            # for key in np.unique(sample["eval"]):
+            #     if key in name_dict:
+            #         print("\n", name_dict[key])
+            #     else:
+            #         print("\n KeyError")
+
+        fp.close()
 
 if __name__ == "__main__":
     model = Recommender()
-    model.train()
-#    model.test("./data/predict/dev.users")
+#    model.train()
+    model.test("./data/predict/dev.users")
 #    Fire(Recommender)
 
 

@@ -58,7 +58,7 @@ def generate_train_dataset(path_to_history="./data/train.parquet"):
     cores = multiprocessing.cpu_count()
     df = pd.read_parquet(path_to_history)
 
-    df = df[df["length"] > 10]
+    df = df[df["length"] > 5]
     df_group = df.groupby("id")
     df_group = [frame for name, frame in tqdm(df_group)]
 
