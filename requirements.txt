@@ -83,11 +83,11 @@ ipywidgets
 
 # etc
 six
-fire
+#fire
 mmh3
 tqdm
-google-cloud-bigquery
+#google-cloud-bigquery
 pyarrow
-pandavro
+#pandavro
 gensim
 h5py
